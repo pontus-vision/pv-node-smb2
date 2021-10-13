@@ -47,6 +47,7 @@ interface IStats {
   atime: Date,
   ctime: Date,
   isDirectory(): boolean
+  size: number
 }
 
 interface IFileStats extends IStats {
