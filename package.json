@@ -1,8 +1,8 @@
 {
-  "name": "@pontusvision/node-smb2",
+  "name": "pv-node-smb2",
   "description": "SMB2 Client",
-  "homepage": "https://github.com/marsaud/node-smb2",
-  "version": "0.18.0",
+  "homepage": "https://github.com/pontus-vision/pv-node-smb2",
+  "version": "0.19.1",
   "engines": {
     "node": ">=5.10"
   },
@@ -18,7 +18,7 @@
   "main": "lib/smb2.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pontus-vision/node-smb2"
+    "url": "https://github.com/pontus-vision/pv-node-smb2"
   },
   "resolutions": {
     "**/**/set-value": "4.0.1",

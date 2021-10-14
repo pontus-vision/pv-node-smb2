@@ -1,19 +1,20 @@
 # SMB2 Client for Node.js
 
-[![Node compatibility](https://badgen.net/npm/node/@marsaud/smb2)](https://npmjs.org/package/@marsaud/smb2) [![License](https://badgen.net/npm/license/@marsaud/smb2)](https://npmjs.org/package/@marsaud/smb2) [![PackagePhobia](https://badgen.net/packagephobia/install/@marsaud/smb2)](https://packagephobia.now.sh/result?p=@marsaud/smb2)
+[![Node compatibility](https://badgen.net/npm/node/pv-node-smb2)](https://npmjs.org/package/pv-node-smb2) [![License](https://badgen.net/npm/license/pv-node-smb2)](https://npmjs.org/package/pv-node-smb2) [![PackagePhobia](https://badgen.net/packagephobia/install/pv-node-smb2)](https://packagephobia.now.sh/result?p=pv-node-smb2)
 
-[![Package Version](https://badgen.net/npm/v/@marsaud/smb2)](https://npmjs.org/package/@marsaud/smb2) [![Build Status](https://travis-ci.org/Node-SMB/marsaud-smb2.png?branch=master)](https://travis-ci.org/Node-SMB/marsaud-smb2) [![Latest Commit](https://badgen.net/github/last-commit/Node-SMB/marsaud-smb2)](https://github.com/Node-SMB/marsaud-smb2/commits/master)
+[![Package Version](https://badgen.net/npm/v/pv-node-smb2)](https://npmjs.org/package/pv-node-smb2) [![Latest Commit](https://badgen.net/github/last-commit/Node-SMB/marsaud-smb2)](https://github.com/Node-SMB/marsaud-smb2/commits/master)
 
 ## Introduction
 
 This library is a simple implementation of SMB2 for Node.js. It allows you to access a SMB2 share as if you were using the native fs library.
 
-The development is still at an experimental stage and should not be yet considered for production environment.
-
+The key differences to the @marsaud/smb2 where this was forked from are better type definition (e.g. the size of the
+files was missing from the IStat), and there are early days attempt to retrieve security details to get the file
+ownership; however, that is not yet working.
 ## Installation
 
 ```bash
-npm install -S @marsaud/smb2
+npm install -S pv-node-smb2
 ```
 
 ## API
@@ -23,21 +24,26 @@ npm install -S @marsaud/smb2
 All async methods can be used with Node-style callbacks or return promises if
 none is passed:
 
-```js
-// Node-style callback
-smb2Client.readFile('foo.txt', function(err, content) {
-  if (err) throw err;
-  console.log(content);
-});
+```typescript
+
+import SMB2, {ISMB2Options} from 'pv-node-smb2'
+
+const options: ISMB2Options = {
+  share: "share",
+  username: "user",
+  domain: "domain",
+  password: "passwd"
+}
+const smb2Client = new SMB2(options)
 
 // With promise, ideal with ES2017 async functions
-const content = await smb2Client.readFile('foo.txt');
-console.log(content);
+const content = await smb2Client.readFile('foo.txt')
+console.log(content)
 ```
 
 ### Construction
 
-> `var smb2Client = new SMB2 ( options )`
+> `let smb2Client = new SMB2 ( options )`
 
 The SMB2 class is the constructor of your SMB2 client.
 
@@ -55,10 +61,10 @@ Example:
 
 ```javascript
 // load the library
-var SMB2 = require('@marsaud/smb2');
+let SMB2 = require('pv-node-smb2');
 
 // create an SMB2 instance
-var smb2Client = new SMB2({
+let smb2Client = new SMB2({
   share: '\\\\000.000.000.000\\c$',
   domain: 'DOMAIN',
   username: 'username',
@@ -159,7 +165,8 @@ Response will be an object with the following structure :
     mtime: Date,
     atime: Date,
     ctime: Date,
-    isDirectory(): boolean
+    isDirectory(): boolean,
+    size: number
 }
 ```
 
@@ -206,7 +213,7 @@ smb2Client.rename(
   'path\\to\\existing\\file.txt',
   {
     replace: true
-  }
+  },
   function(err) {
     if (err) throw err;
     console.log('file has been renamed');
@@ -373,6 +380,7 @@ smb2Client.open('path\\to\\the\\file', 'w', function(err, fd) {
 
 - [Benjamin Chelli](https://github.com/bchelli)
 - [Fabrice Marsaud](https://github.com/marsaud)
+- [Leo Martins](https://github.com/pontusvision)
 
 ## References
 

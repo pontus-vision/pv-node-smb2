@@ -1,6 +1,6 @@
 import { Readable, Writable } from 'stream';
 
-interface ISMB2Options {
+export interface ISMB2Options {
   share: string;
   username: string;
   domain: string;
@@ -11,7 +11,7 @@ interface ISMB2Options {
   debug?: boolean;
 }
 
-interface ICreateReadStreamOptions {
+export interface ICreateReadStreamOptions {
   autoClose?: boolean;
   end?: number;
   fd?: number;
@@ -19,28 +19,28 @@ interface ICreateReadStreamOptions {
   start?: number;
 }
 
-interface ICreateWriteStreamOptions {
+export interface ICreateWriteStreamOptions {
   autoClose?: boolean;
   fd?: number;
   flags?: string;
   start?: number;
 }
 
-interface SMB2Readable extends Readable {
+export interface SMB2Readable extends Readable {
   fileSize: number;
 }
 
-interface SMB2Writable extends Writable {}
+export interface SMB2Writable extends Writable {}
 
-interface IEncodingOption {
+export interface IEncodingOption {
   encoding?: string | null;
 }
 
-interface IStatsOption {
+export interface IStatsOption {
   stats: true;
 }
 
-interface IStats {
+export interface IStats {
   name: string,
   birthtime: Date,
   mtime: Date,
@@ -50,7 +50,7 @@ interface IStats {
   size: number
 }
 
-interface IFileStats extends IStats {
+export interface IFileStats extends IStats {
   name: string,
 }
 
