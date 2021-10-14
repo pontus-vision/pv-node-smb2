@@ -3,3 +3,6 @@ node_modules
 test.js
 
 /test/config.toml
+pv-node-smb2.iml
+pv-node-smb2.ipr
+pv-node-smb2.iws
