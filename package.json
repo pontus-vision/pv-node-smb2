@@ -14,15 +14,11 @@
   "contributors": [
     "Leo Martins <lmartins@pontusvision.com> (https://github.com/pontusvision)"
   ],
-  "types": "index.d.ts",
-  "main": "lib/pv-smb2.js",
+  "types": "build/lib/pv-smb2.d.ts",
+  "main": "build/lib/pv-smb2.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/pontus-vision/pv-node-smb2"
-  },
-  "resolutions": {
-    "**/**/set-value": "4.0.1",
-    "**/**/cache-base": "0.7.0"
   },
   "gypfile": true,
   "dependencies": {
