@@ -11,7 +11,7 @@ const main = async () => {
     const content = smb2Client.readFileSync(process.env.PV_SMB_URL||'smb://<host or IP>/Windows Path/goes/here/foo.txt')
     console.log(content.toString('base64'))
 
-    const info = smb2Client.readDir(process.env.PV_SMB_URL||'smb://<host or IP>/Windows Path/goes/here/foo.txt')
+    const info = smb2Client.fileInfo(process.env.PV_SMB_URL||'smb://<host or IP>/Windows Path/goes/here/foo.txt')
     console.log (`${JSON.stringify(info)}`)
 }
 

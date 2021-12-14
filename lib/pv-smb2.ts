@@ -1,4 +1,4 @@
-import bindings from "bindings";
+import bindings from 'bindings';
 
 const pv = bindings('pv');
 
@@ -35,6 +35,10 @@ export class PvNodeSmb2 {
     pv.pvDeleteContext(this.ctx)
   }
 
+
+  fileInfo(smbPath:string):PvDirent{
+    return pv.pvFileInfoFromContext(this.ctx,smbPath);
+  }
 
   readFileSync(smbPath:string): Buffer{
     return pv.pvReadFromContext(this.ctx,smbPath)

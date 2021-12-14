@@ -109,9 +109,6 @@ static napi_value pvDeleteContext(napi_env env, napi_callback_info info)
 
 static napi_value pvCreateContext(napi_env env, napi_callback_info info)
 {
-  // char *workgroup = "MD2";
-  // char *user = "leonardo.martins";
-  // char *password = "Asdf#1234qwer";
 
   size_t argc = 3;
   napi_value args[3];
@@ -158,11 +155,110 @@ static napi_value pvCreateContext(napi_env env, napi_callback_info info)
   return ctx;
 }
 
+static napi_value pvFileInfoFromContext(napi_env env, napi_callback_info info)
+{
+
+  size_t argc = 2;
+  napi_value args[2];
+  CHECK(napi_get_cb_info(env, info, &argc, args, NULL, NULL) == napi_ok);
+
+  if (argc < 2)
+  {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  napi_valuetype valuetype0;
+  CHECK(napi_typeof(env, args[0], &valuetype0) == napi_ok);
+
+  napi_valuetype valuetype1;
+  CHECK(napi_typeof(env, args[1], &valuetype1) == napi_ok);
+
+  if (valuetype0 != napi_external || valuetype1 != napi_string)
+  {
+    napi_throw_type_error(env, NULL, "Wrong argument types");
+    return NULL;
+  }
+
+  SMBCCTX *ctx;
+
+  CHECK(napi_get_value_external(env, args[0], (void **)&ctx) == napi_ok);
+  char url[PV_MAX_CRED_SIZE];
+  CHECK(napi_get_value_string_utf8(env, args[1], url, PV_MAX_CRED_SIZE, NULL) == napi_ok);
+
+  SMBCFILE *fd = (smbc_getFunctionOpen(ctx))(ctx, url,O_RDONLY,0);
+  if (!fd)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "Unable to open file; error %s", strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+  struct stat st;
+
+  int statRet = smbc_getFunctionFstat(ctx)(ctx, fd, &st);
+  if (statRet != 0)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "Unable to get fstat data; error %s", strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+
+  smbc_getFunctionClose(ctx)(ctx, fd);
+
+  napi_value obj;
+  CHECK(napi_create_object(env, &obj) == napi_ok);
+
+  napi_value size;
+  CHECK(napi_create_uint32(env, st.st_size, &size) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "size", size) == napi_ok);
+
+  napi_value uid;
+  CHECK(napi_create_uint32(env, st.st_uid, &uid) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "uid", uid) == napi_ok);
+
+  napi_value gid;
+  CHECK(napi_create_uint32(env, st.st_gid, &gid) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "gid", gid) == napi_ok);
+
+  napi_value btime_ts;
+  CHECK(napi_create_uint32(env, st.st_ctim.tv_sec, &btime_ts) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "btime_ts", btime_ts) == napi_ok);
+
+  napi_value mtime_ts;
+  CHECK(napi_create_uint32(env, st.st_mtim.tv_sec, &mtime_ts) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "mtime_ts", mtime_ts) == napi_ok);
+
+  napi_value atime_ts;
+  CHECK(napi_create_uint32(env, st.st_mtim.tv_sec, &atime_ts) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "uid", uid) == napi_ok);
+
+  napi_value ctime_ts;
+  CHECK(napi_create_uint32(env, st.st_ctim.tv_sec, &ctime_ts) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "ctime_ts", ctime_ts) == napi_ok);
+
+  napi_value name;
+
+  CHECK(napi_create_string_utf8(env, url, strlen(url), &name) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "name", name) == napi_ok);
+
+  napi_value isFile, isFileBool;
+  CHECK(napi_create_uint32(env, st.st_mode & __S_IFREG, &isFile) == napi_ok);
+  CHECK(napi_coerce_to_bool(env, isFile, &isFileBool) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "isFile", isFileBool) == napi_ok);
+
+  napi_value isDir, isDirBool;
+  CHECK(napi_create_uint32(env, st.st_mode & __S_IFDIR & SMBC_DOS_MODE_DIRECTORY, &isDir) == napi_ok);
+  CHECK(napi_coerce_to_bool(env, isDir, &isDirBool) == napi_ok);
+  CHECK(napi_set_named_property(env, obj, "isDir", isDirBool) == napi_ok);
+
+
+  return obj;
+}
+
 static napi_value pvDirReadFromContext(napi_env env, napi_callback_info info)
 {
-  // char *workgroup = "MD2";
-  // char *user = "leonardo.martins";
-  // char *password = "Asdf#1234qwer";
 
   size_t argc = 2;
   napi_value args[2];
@@ -215,7 +311,7 @@ static napi_value pvDirReadFromContext(napi_env env, napi_callback_info info)
 
     if (fileInfo == NULL && errno != 0)
     {
-      smbc_getFunctionClose(ctx)(ctx, fd);
+      smbc_getFunctionClosedir(ctx)(ctx, fd);
       char msg[PV_MAX_CRED_SIZE];
       snprintf(msg, PV_MAX_CRED_SIZE, "Unable to read directory; error %s", strerror(errno));
       napi_throw_type_error(env, NULL, msg);
@@ -285,16 +381,13 @@ static napi_value pvDirReadFromContext(napi_env env, napi_callback_info info)
 
   } while (info != NULL);
 
-  smbc_getFunctionClose(ctx)(ctx, fd);
+  smbc_getFunctionClosedir(ctx)(ctx, fd);
 
   return retVal;
 }
 
 static napi_value pvReadFromContext(napi_env env, napi_callback_info info)
 {
-  // char *workgroup = "MD2";
-  // char *user = "leonardo.martins";
-  // char *password = "Asdf#1234qwer";
 
   size_t argc = 2;
   napi_value args[2];
@@ -414,6 +507,19 @@ static napi_value pvReadFromContext(napi_env env, napi_callback_info info)
 
   // Decorate exports with the above-defined properties.
   CHECK(napi_define_properties(env, exports, 1, &pvDirReadFromContextFunc) == napi_ok);
+
+  napi_property_descriptor pvFileInfoFromContextFunc = {
+      "pvFileInfoFromContext",
+      NULL,
+      pvFileInfoFromContext,
+      NULL,
+      NULL,
+      NULL,
+      napi_default,
+      NULL};
+
+  // Decorate exports with the above-defined properties.
+  CHECK(napi_define_properties(env, exports, 1, &pvFileInfoFromContextFunc) == napi_ok);
 
   // Return the decorated exports object.
   return exports;
