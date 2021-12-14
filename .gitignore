@@ -6,3 +6,11 @@ test.js
 pv-node-smb2.iml
 pv-node-smb2.ipr
 pv-node-smb2.iws
+.editorconfig
+.vscode
+build
+node_modules
+
+pv-node-smb2.iml
+pv-node-smb2.ipr
+pv-node-smb2.iws

@@ -6,11 +6,11 @@
 
 ## Introduction
 
-This library is a simple implementation of SMB2 for Node.js. It allows you to access a SMB2 share as if you were using the native fs library.
+This library calls the C libraries for libsmbclient to read and search through directories.
 
-The key differences to the @marsaud/smb2 where this was forked from are better type definition (e.g. the size of the
-files was missing from the IStat), and there are early days attempt to retrieve security details to get the file
-ownership; however, that is not yet working.
+The original fork was unable to connect to newer servers, and rather than hacking about with the smb2 protocol, it is far easier to 
+leverage the great work of the samba team, and use their libsmbclient library via NAPI bindings.
+This is much quicker than other wrappers that fork/exec smbclient, and the only OS pre-req (on Linux) is to install the libsmbclient-dev package.
 ## Installation
 
 ```bash
@@ -21,60 +21,24 @@ npm install -S pv-node-smb2
 
 ### Asynchronicity
 
-All async methods can be used with Node-style callbacks or return promises if
-none is passed:
+No async calls supported yet; there's a skeleton for a read function, but much more work is still needed.
 
+
+### Sync calls
 ```typescript
 
-import SMB2, {ISMB2Options} from 'pv-node-smb2'
+import {PvDirent,PvNodeSmb2} from 'pv-node-smb2'
 
-const options: ISMB2Options = {
-  share: "share",
-  username: "user",
-  domain: "domain",
-  password: "passwd"
-}
-const smb2Client = new SMB2(options)
+const smb2Client = new PvNodeSmb2('workgroup', 'user', 'password')
 
-// With promise, ideal with ES2017 async functions
-const content = await smb2Client.readFile('foo.txt')
-console.log(content)
+const content = await smb2Client.readFileSync('smb://<host or IP>/Windows Path/goes/here/foo.txt')
+console.log(content.toString('base64')
 ```
 
-### Construction
-
-> `let smb2Client = new SMB2 ( options )`
-
-The SMB2 class is the constructor of your SMB2 client.
-
-the parameter `options` accepts this list of attributes:
-
-- `share`: the share you want to access
-- `domain`: the domain of which the user is registered
-- `username`: the username of the user that access the share
-- `password`: the password
-- `port` (optional): default `445`, the port of the SMB server
-- `packetConcurrency` (optional): default `20`, the number of simultaneous packet when writing / reading data from the share
-- `autoCloseTimeout` (optional): default `10000`, the timeout in milliseconds before to close the SMB2 session and the socket, if set to `0` the connection will never be closed unless you do it
-
-Example:
-
-```javascript
-// load the library
-let SMB2 = require('pv-node-smb2');
-
-// create an SMB2 instance
-let smb2Client = new SMB2({
-  share: '\\\\000.000.000.000\\c$',
-  domain: 'DOMAIN',
-  username: 'username',
-  password: 'password!',
-});
-```
 
 ### Connection management
 
-The connection to the SMB server will be automatically open when necessary.
+each instance of this class will have its own connection.
 
 Unless you have set `autoCloseTimeout` to `0` during client construction, the connection will be closed automatically.
 
