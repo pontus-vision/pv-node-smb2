@@ -1,5 +1,14 @@
-src
 .*
 *.map
 test
 log
+
+.DS_Store
+
+.editorconfig
+.vscode
+node_modules
+
+pv-node-smb2.iml
+pv-node-smb2.ipr
+pv-node-smb2.iws

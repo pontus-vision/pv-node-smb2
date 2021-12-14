@@ -2,7 +2,7 @@
   "name": "pv-node-smb2",
   "description": "SMB2 Client",
   "homepage": "https://github.com/pontus-vision/pv-node-smb2",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "engines": {
     "node": ">= 10.16.0"
   },
@@ -14,8 +14,8 @@
   "contributors": [
     "Leo Martins <lmartins@pontusvision.com> (https://github.com/pontusvision)"
   ],
-  "types": "build/lib/pv-smb2.d.ts",
-  "main": "build/lib/pv-smb2.js",
+  "types": "dist/lib/pv-smb2.d.ts",
+  "main": "dist/lib/pv-smb2.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/pontus-vision/pv-node-smb2"
@@ -39,6 +39,7 @@
     "typescript": "^4.5.4"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && unlink ./build/Release/pv.node && cp ./build/Release/obj.target/pv.node ./build/Release/pv.node"
+    
   }
 }
