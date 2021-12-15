@@ -2,7 +2,7 @@
   "name": "pv-node-smb2",
   "description": "SMB2 Client",
   "homepage": "https://github.com/pontus-vision/pv-node-smb2",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "engines": {
     "node": ">= 10.16.0"
   },

@@ -357,11 +357,11 @@ static napi_value pvDirReadFromContext(napi_env env, napi_callback_info info)
     napi_value name;
 
     char *nameStr = fileInfo->name ? fileInfo->name : fileInfo->short_name;
-    printf("Got  %s [%d]\n", nameStr, counter);
+    // printf("Got  %s [%d]\n", nameStr, counter);
 
     if (nameStr)
     {
-      printf("Got %s \n", nameStr);
+      // printf("Got %s \n", nameStr);
       CHECK(napi_create_string_utf8(env, nameStr, strlen(nameStr), &name) == napi_ok);
       CHECK(napi_set_named_property(env, obj, "name", name) == napi_ok);
     }
