@@ -10,6 +10,7 @@ pv-node-smb2.iws
 .vscode
 build
 node_modules
+dist
 
 pv-node-smb2.iml
 pv-node-smb2.ipr
