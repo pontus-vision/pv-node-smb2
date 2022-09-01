@@ -448,6 +448,138 @@ static napi_value pvReadFromContext(napi_env env, napi_callback_info info)
   return retVal;
 }
 
+static napi_value pvWriteToContext(napi_env env, napi_callback_info info)
+{
+
+  size_t argc = 3;
+  napi_value args[3];
+  CHECK(napi_get_cb_info(env, info, &argc, args, NULL, NULL) == napi_ok);
+
+  if (argc < 3)
+  {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  napi_valuetype valuetype0;
+  CHECK(napi_typeof(env, args[0], &valuetype0) == napi_ok);
+
+  napi_valuetype valuetype1;
+  CHECK(napi_typeof(env, args[1], &valuetype1) == napi_ok);
+
+  napi_valuetype valuetype2;
+  CHECK(napi_typeof(env, args[2], &valuetype2) == napi_ok);
+
+  bool buffertype;
+  CHECK(napi_is_buffer(env, args[2], &buffertype) == napi_ok);
+
+  if (valuetype0 != napi_external || valuetype1 != napi_string || buffertype != 1)
+  {
+    napi_throw_type_error(env, NULL, "Wrong argument types");
+    return NULL;
+  }
+
+  SMBCCTX *ctx;
+
+  CHECK(napi_get_value_external(env, args[0], (void **)&ctx) == napi_ok);
+  char url[PV_MAX_CRED_SIZE];
+  CHECK(napi_get_value_string_utf8(env, args[1], url, PV_MAX_CRED_SIZE, NULL) == napi_ok);
+
+  char *buf = calloc(1, MAX_FILE_SIZE);
+  if (!buf)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "Unable allocate %ld bytes; error %s", MAX_FILE_SIZE, strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+
+  SMBCFILE *fd = (smbc_getFunctionCreat(ctx))(ctx, url, O_RDWR);
+
+  if (!fd)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "Unable to create or open file; error %s", strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+
+  const char* bufferData;
+  size_t lengthOfBuffer;
+  CHECK(napi_get_buffer_info(env, args[2], (void**)(&bufferData), &lengthOfBuffer) == napi_ok);
+
+  ssize_t numBytes = (smbc_getFunctionWrite(ctx))(ctx, fd, (void *)bufferData, lengthOfBuffer);
+
+  smbc_getFunctionClose(ctx)(ctx, fd);
+
+  napi_value retVal;
+  CHECK(napi_create_int32(env, numBytes, &retVal) == napi_ok)
+
+  return retVal;
+}
+
+static napi_value pvRenameOnContext(napi_env env, napi_callback_info info)
+{
+
+  size_t argc = 3;
+  napi_value args[3];
+  CHECK(napi_get_cb_info(env, info, &argc, args, NULL, NULL) == napi_ok);
+
+  if (argc < 3)
+  {
+    napi_throw_type_error(env, NULL, "Wrong number of arguments");
+    return NULL;
+  }
+
+  napi_valuetype valuetype0;
+  CHECK(napi_typeof(env, args[0], &valuetype0) == napi_ok);
+
+  napi_valuetype valuetype1;
+  CHECK(napi_typeof(env, args[1], &valuetype1) == napi_ok);
+
+  napi_valuetype valuetype2;
+  CHECK(napi_typeof(env, args[2], &valuetype2) == napi_ok);
+
+  if (valuetype0 != napi_external || valuetype1 != napi_string || valuetype2 != napi_string)
+  {
+    napi_throw_type_error(env, NULL, "Wrong argument types");
+    return NULL;
+  }
+
+  SMBCCTX *ctx;
+  CHECK(napi_get_value_external(env, args[0], (void **)&ctx) == napi_ok);
+
+  char o_url[PV_MAX_CRED_SIZE];
+  CHECK(napi_get_value_string_utf8(env, args[1], o_url, PV_MAX_CRED_SIZE, NULL) == napi_ok);
+
+  char n_url[PV_MAX_CRED_SIZE];
+  CHECK(napi_get_value_string_utf8(env, args[2], n_url, PV_MAX_CRED_SIZE, NULL) == napi_ok);
+
+  SMBCFILE *fd = (smbc_getFunctionOpen(ctx))(ctx, o_url,O_RDONLY,0);
+  if (!fd)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "File does not exist; error %s", strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+  smbc_getFunctionClose(ctx)(ctx, fd);
+
+  int value = (smbc_getFunctionRename(ctx))(ctx, o_url, ctx, n_url);
+  if (value == -1)
+  {
+    char msg[PV_MAX_CRED_SIZE];
+    snprintf(msg, PV_MAX_CRED_SIZE, "Unable to rename file; error %s", strerror(errno));
+    napi_throw_type_error(env, NULL, msg);
+    return NULL;
+  }
+
+  napi_value retVal;
+  CHECK(napi_create_int32(env, value, &retVal) == napi_ok)
+
+  return retVal;
+}
+
 // The commented-out return type and the commented out formal function
 // parameters below help us keep in mind the signature of the addon
 // initialization function. We write the body as though the return value were as
@@ -521,6 +653,32 @@ static napi_value pvReadFromContext(napi_env env, napi_callback_info info)
   // Decorate exports with the above-defined properties.
   CHECK(napi_define_properties(env, exports, 1, &pvFileInfoFromContextFunc) == napi_ok);
 
+    napi_property_descriptor pvWriteToContextFunc = {
+      "pvWriteToContext",
+      NULL,
+      pvWriteToContext,
+      NULL,
+      NULL,
+      NULL,
+      napi_default,
+      NULL};
+
+  // Decorate exports with the above-defined properties.
+  CHECK(napi_define_properties(env, exports, 1, &pvWriteToContextFunc) == napi_ok);
+
+  napi_property_descriptor pvRenameOnContextFunc = {
+      "pvRenameOnContext",
+      NULL,
+      pvRenameOnContext,
+      NULL,
+      NULL,
+      NULL,
+      napi_default,
+      NULL};
+
+  // Decorate exports with the above-defined properties.
+  CHECK(napi_define_properties(env, exports, 1, &pvRenameOnContextFunc) == napi_ok);
+  
   // Return the decorated exports object.
   return exports;
 }

@@ -59,6 +59,35 @@ export class PvNodeSmb2 {
     });
 
   }
+  /**
+   * Write buffer to samba share 
+   * 
+   * @remarks
+   * If the file exists it will be overwritten 
+   * 
+   * @param smbPath - Smb uri of the file ex. 'smb://<host or IP>/Windows Path/goes/here/foo.txt'
+   * @param data - Buffer to be written
+   * @returns Size of buffer which was written to the share
+   * 
+   * @beta
+   */
+  writeFileSync(smbPath:string, data: Buffer): number{
+    return pv.pvWriteToContext(this.ctx,smbPath,data)
+  }
+  /**
+   * Rename or move a file on samba share 
+   * 
+   * @remarks
+   * If the new file exists it will be overwritten 
+   * 
+   * @param oldSmbPath - Smb uri of the file to be moved or renamed, ex: 'smb://<host or IP>/Windows Path/goes/here/foo.txt'
+   * @param newSmbPath - Smb uri of the new file, ex: 'smb://<host or IP>/Windows Path/goes/here/foo.txt'
+   * @returns Number 0 if successful
+   * 
+   * @beta
+   */
 
-
+  renameFileSync(oldSmbPath:string, newSmbPath: string): number{
+    return pv.pvRenameOnContext(this.ctx,oldSmbPath,newSmbPath)
+  }
 }
